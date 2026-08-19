@@ -1,1 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FriendChat Hub 1.0</title>
 
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#080c16;color:#fff;min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+header{height:65px;border-bottom:1px solid #243149;background:#0b111e;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}
+.logo{font-size:21px;font-weight:900}
+.logo span{color:#35cfff}
+.user{display:flex;align-items:center;gap:9px;color:#9aa8c0;font-size:13px}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3478ff,#8d5cff);font-weight:900}
+nav{display:flex;gap:5px;padding:10px 15px;overflow-x:auto;background:#0b111e;border-bottom:1px solid #182237}
+nav button{border:0;background:transparent;color:#8492aa;padding:9px 12px;border-radius:9px;font-weight:700;white-space:nowrap}
+nav button.active,nav button:hover{background:#17243a;color:#fff}
+main{max-width:1050px;margin:auto;padding:22px 15px 60px}
+.section{display:none}
+.section.active{display:block}
+.hero{text-align:center;padding:50px 10px 35px}
+.badge{display:inline-block;padding:7px 12px;border-radius:30px;background:#10263b;color:#35cfff;font-size:11px;font-weight:800;margin-bottom:16px}
+.hero h1{font-size:clamp(38px,8vw,68px);line-height:1;margin-bottom:15px}
+.hero h1 span{background:linear-gradient(90deg,#4d8dff,#35cfff,#a16cff);-webkit-background-clip:text;color:transparent}
+.hero p{color:#8795ae;max-width:600px;margin:auto;line-height:1.6}
+.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:22px}
+.primary,.secondary,.danger{border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.primary{background:linear-gradient(135deg,#3478ff,#7955ff);color:#fff}
+.secondary{background:#162239;border:1px solid #263754;color:#fff}
+.danger{background:#3b1821;color:#ff7180;border:1px solid #612936}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.card,.panel,.friend,.chat-box{background:#101827;border:1px solid #22304a;border-radius:16px;padding:18px}
+.card h3{margin:8px 0}
+.card p,.muted{color:#8795ae;font-size:13px;line-height:1.5}
+.icon{font-size:30px}
+.title{margin:20px 0 14px}
+.title h2{font-size:25px}
+.title p{color:#8795ae;font-size:13px;margin-top:4px}
+.search,input{width:100%;background:#0d1524;color:#fff;border:1px solid #263754;border-radius:10px;padding:12px;outline:none}
+.search{margin-bottom:13px}
+.friend-list{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.friend{display:flex;align-items:center;gap:12px}
+.friend-info{flex:1}
+.friend-info h3{font-size:15px;margin-bottom:4px}
+.online{color:#42e692;font-size:11px}
+.offline{color:#8492aa;font-size:11px}
+.form{max-width:450px;margin:35px auto}
+.form h2{text-align:center;margin-bottom:8px}
+.form>p{text-align:center;color:#8795ae;font-size:13px;margin-bottom:20px}
+.field{margin-bottom:13px}
+.field label{display:block;color:#8795ae;font-size:12px;margin-bottom:6px}
+.form .primary{width:100%}
+.switch{text-align:center;color:#8795ae;font-size:13px;margin-top:15px}
+.switch button{border:0;background:none;color:#35cfff;font-weight:800}
+.chat-layout{display:grid;grid-template-columns:280px 1fr;gap:13px}
+.chat-list{display:flex;flex-direction:column;gap:8px}
+.chat-user{display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;background:#0d1524;border:1px solid #1d2a40;cursor:pointer}
+.chat-user.active{border-color:#3478ff;background:#14223a}
+.chat-window{min-height:520px;display:flex;flex-direction:column}
+.chat-head{display:flex;align-items:center;gap:10px;border-bottom:1px solid #22304a;padding-bottom:14px}
+.messages{flex:1;padding:18px 3px;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+.msg{max-width:75%;padding:10px 12px;border-radius:13px;font-size:13px;line-height:1.4}
+.msg.me{align-self:flex-end;background:#3478ff}
+.msg.them{align-self:flex-start;background:#1a263b}
+.msg-time{font-size:9px;opacity:.65;margin-top:4px}
+.send{display:flex;gap:8px;border-top:1px solid #22304a;padding-top:13px}
+.send input{flex:1}
+.profile{max-width:650px;margin:auto;text-align:center}
+.profile-top{background:linear-gradient(135deg,#142b50,#24154c);border-radius:18px 18px 0 0;padding:30px}
+.big-avatar{width:90px;height:90px;margin:auto;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3478ff,#8d5cff);font-size:35px;font-weight:900}
+.profile h2{margin-top:12px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:15px}
+.profile-stat{background:#0c1422;border:1px solid #22304a;padding:15px;border-radius:11px}
+.profile-stat strong{display:block;font-size:20px}
+.profile-stat span{color:#8795ae;font-size:11px}
+.notice{background:#101827;border:1px solid #263754;color:#9ba9c0;border-radius:11px;padding:12px;font-size:13px;margin-bottom:13px}
+.empty{text-align:center;color:#8795ae;padding:35px;border:1px dashed #263754;border-radius:14px}
+footer{text-align:center;border-top:1px solid #182237;color:#6f7d95;padding:24px;font-size:12px}
+@media(max-width:750px){
+.cards,.friend-list{grid-template-columns:1fr}
+.chat-layout{grid-template-columns:1fr}
+.chat-list{display:grid;grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:450px){
+.chat-list{grid-template-columns:1fr}
+.hero{padding-top:35px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">💬 <span>FriendChat</span> Hub <small>1.0</small></div>
+  <div class="user">
+    <span id="headerName">Guest</span>
+    <div class="avatar" id="headerAvatar">G</div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="show('home',this)">🏠 Home</button>
+  <button onclick="show('friends',this)">👥 Friends</button>
+  <button onclick="show('chat',this)">💬 Chat</button>
+  <button onclick="show('notifications',this)">🔔 Notifications</button>
+  <button onclick="show('profile',this)">👤 Profile</button>
+  <button onclick="show('auth',this)">🔐 Login</button>
+</nav>
+
+<main>
+
+<section id="home" class="section active">
+  <div class="hero">
+    <div class="badge">⚡ FRIENDCHAT HUB 1.0</div>
+    <h1>Chat with your <span>Friends.</span></h1>
+    <p>Connect with friends, start conversations and manage your squad from one simple hub.</p>
+    <div class="actions">
+      <button class="primary" onclick="show('friends')">👥 Find Friends</button>
+      <button class="secondary" onclick="show('chat')">💬 Open Chat</button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="icon">💬</div>
+      <h3>Private Chat</h3>
+      <p>Start one-to-one conversations with your friends.</p>
+    </div>
+    <div class="card">
+      <div class="icon">👥</div>
+      <h3>Friends</h3>
+      <p>Find people and manage your friend list.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔔</div>
+      <h3>Notifications</h3>
+      <p>See friend requests and activity notifications.</p>
+    </div>
+  </div>
+</section>
+
+<section id="auth" class="section">
+  <div class="panel form">
+    <h2 id="authTitle">🔐 Login</h2>
+    <p id="authDesc">Login to your FriendChat Hub account.</p>
+
+    <div id="authMessage"></div>
+
+    <div class="field">
+      <label>Username</label>
+      <input id="username" maxlength="25" placeholder="Username">
+    </div>
+
+    <div class="field" id="emailField" style="display:none">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="Email">
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Password">
+    </div>
+
+    <button class="primary" id="authButton" onclick="auth()">Login</button>
+
+    <div class="switch">
+      <span id="switchText">Don't have an account?</span>
+      <button onclick="toggleAuth()">Create Account</button>
+    </div>
+  </div>
+</section>
+
+<section id="friends" class="section">
+  <div class="title">
+    <h2>👥 Friends</h2>
+    <p>Find and manage your friends.</p>
+  </div>
+
+  <input class="search" id="friendSearch" placeholder="🔎 Search friends..." oninput="renderFriends()">
+
+  <div id="friendList" class="friend-list"></div>
+</section>
+
+<section id="chat" class="section">
+  <div class="title">
+    <h2>💬 Chat</h2>
+    <p>Your conversations.</p>
+  </div>
+
+  <div class="chat-layout">
+    <div class="chat-box">
+      <div class="chat-list" id="chatUsers"></div>
+    </div>
+
+    <div class="chat-box chat-window">
+      <div class="chat-head">
+        <div class="avatar" id="chatAvatar">?</div>
+        <div>
+          <strong id="chatName">Select a friend</strong>
+          <div class="muted" id="chatStatus"></div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="empty">Select a friend to start chatting.</div>
+      </div>
+
+      <div class="send">
+        <input id="messageInput" placeholder="Write a message..." onkeydown="enterSend(event)">
+        <button class="primary" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="notifications" class="section">
+  <div class="title">
+    <h2>🔔 Notifications</h2>
+    <p>Recent FriendChat activity.</p>
+  </div>
+
+  <div class="panel">
+    <div class="notice">👋 Welcome to FriendChat Hub 1.0.</div>
+    <div class="notice">💬 Your new messages will appear here.</div>
+    <div class="notice">👥 Friend requests will appear here.</div>
+  </div>
+</section>
+
+<section id="profile" class="section">
+  <div id="profileContent"></div>
+</section>
+
+</main>
+
+<footer>
+  💬 <strong>FriendChat Hub 1.0</strong><br><br>
+  Connect • Chat • Friends<br><br>
+  © 2026 FriendChat Hub
+</footer>
+
+<script>
+const USER_KEY="friendchat_users_v1";
+const CURRENT_KEY="friendchat_current_v1";
+const FRIEND_KEY="friendchat_friends_v1";
+const MSG_KEY="friendchat_messages_v1";
+
+let users=JSON.parse(localStorage.getItem(USER_KEY)||"[]");
+let current=JSON.parse(localStorage.getItem(CURRENT_KEY)||"null");
+let friends=JSON.parse(localStorage.getItem(FRIEND_KEY)||"[]");
+let messages=JSON.parse(localStorage.getItem(MSG_KEY)||"{}");
+
+let authMode="login";
+let selectedFriend=null;
+
+const demoFriends=[
+  {username:"Alex",online:true},
+  {username:"Riya",online:true},
+  {username:"Sam",online:false},
+  {username:"Arjun",online:true}
+];
+
+function save(){
+  localStorage.setItem(USER_KEY,JSON.stringify(users));
+  localStorage.setItem(CURRENT_KEY,JSON.stringify(current));
+  localStorage.setItem(FRIEND_KEY,JSON.stringify(friends));
+  localStorage.setItem(MSG_KEY,JSON.stringify(messages));
+}
+
+function initial(name){
+  return (name||"?").charAt(0).toUpperCase();
+}
+
+function show(id,button){
+
+  document.querySelectorAll(".section")
+    .forEach(x=>x.classList.remove("active"));
+
+  const section=document.getElementById(id);
+  if(section) section.classList.add("active");
+
+  document.querySelectorAll("nav button")
+    .forEach(x=>x.classList.remove("active"));
+
+  if(button) button.classList.add("active");
+
+  if(id==="friends")renderFriends();
+  if(id==="chat")renderChats();
+  if(id==="profile")renderProfile();
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function toggleAuth(){
+
+  authMode=authMode==="login"?"register":"login";
+
+  document.getElementById("authTitle").textContent=
+    authMode==="login"?"🔐 Login":"✨ Create Account";
+
+  document.getElementById("authDesc").textContent=
+    authMode==="login"
+    ?"Login to your FriendChat Hub account."
+    :"Create your FriendChat Hub account.";
+
+  document.getElementById("emailField").style.display=
+    authMode==="login"?"none":"block";
+
+  document.getElementById("authButton").textContent=
+    authMode==="login"?"Login":"Create Account";
+
+  document.getElementById("switchText").textContent=
+    authMode==="login"
+    ?"Don't have an account?"
+    :"Already have an account?";
+}
+
+function auth(){
+
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value;
+  const email=document.getElementById("email").value.trim();
+  const msg=document.getElementById("authMessage");
+
+  if(!username||!password){
+    msg.innerHTML='<div class="notice">Enter username and password.</div>';
+    return;
+  }
+
+  if(authMode==="register"){
+
+    if(!email){
+      msg.innerHTML='<div class="notice">Enter your email.</div>';
+      return;
+    }
+
+    if(users.some(u=>u.username.toLowerCase()===username.toLowerCase())){
+      msg.innerHTML='<div class="notice">Username already exists.</div>';
+      return;
+    }
+
+    users.push({
+      username,
+      email,
+      password,
+      created:Date.now()
+    });
+
+    current={username};
+
+    save();
+    updateHeader();
+    renderProfile();
+    show("profile");
+    return;
+  }
+
+  const user=users.find(
+    u=>u.username.toLowerCase()===username.toLowerCase() &&
+       u.password===password
+  );
+
+  if(!user){
+    msg.innerHTML='<div class="notice">Incorrect username or password.</div>';
+    return;
+  }
+
+  current={username:user.username};
+  save();
+  updateHeader();
+  renderProfile();
+  show("profile");
+}
+
+function updateHeader(){
+
+  const name=document.getElementById("headerName");
+  const avatar=document.getElementById("headerAvatar");
+
+  if(current){
+    name.textContent=current.username;
+    avatar.textContent=initial(current.username);
+  }else{
+    name.textContent="Guest";
+    avatar.textContent="G";
+  }
+}
+
+function renderFriends(){
+
+  const box=document.getElementById("friendList");
+  const search=(document.getElementById("friendSearch").value||"").toLowerCase();
+
+  const all=[...demoFriends,...friends];
+
+  const unique=[];
+  all.forEach(f=>{
+    if(!unique.some(x=>x.username===f.username))unique.push(f);
+  });
+
+  const filtered=unique.filter(
+    f=>f.username.toLowerCase().includes(search)
+  );
+
+  if(!filtered.length){
+    box.innerHTML='<div class="empty">No friends found.</div>';
+    return;
+  }
+
+  box.innerHTML=filtered.map(f=>`
+    <div class="friend">
+      <div class="avatar">${initial(f.username)}</div>
+      <div class="friend-info">
+        <h3>${escapeHTML(f.username)}</h3>
+        <span class="${f.online?'online':'offline'}">
+          ${f.online?'● Online':'● Offline'}
+        </span>
+      </div>
+      <button class="secondary" onclick="openChat('${escapeAttr(f.username)}')">
+        Chat
+      </button>
+    </div>
+  `).join("");
+}
+
+function renderChats(){
+
+  const box=document.getElementById("chatUsers");
+
+  const all=[...demoFriends,...friends];
+  const unique=[];
+
+  all.forEach(f=>{
+    if(!unique.some(x=>x.username===f.username))unique.push(f);
+  });
+
+  box.innerHTML=unique.map(f=>`
+    <div class="chat-user ${selectedFriend===f.username?'active':''}"
+         onclick="selectChat('${escapeAttr(f.username)}')">
+      <div class="avatar">${initial(f.username)}</div>
+      <div>
+        <strong>${escapeHTML(f.username)}</strong><br>
+        <span class="${f.online?'online':'offline'}">
+          ${f.online?'Online':'Offline'}
+        </span>
+      </div>
+    </div>
+  `).join("");
+
+  renderMessages();
+}
+
+function selectChat(name){
+
+  selectedFriend=name;
+
+  renderChats();
+}
+
+function openChat(name){
+
+  selectedFriend=name;
+
+  show("chat");
+
+  renderChats();
+}
+
+function renderMessages(){
+
+  const box=document.getElementById("messages");
+  const name=document.getElementById("chatName");
+  const avatar=document.getElementById("chatAvatar");
+  const status=document.getElementById("chatStatus");
+
+  if(!selectedFriend){
+    name.textContent="Select a friend";
+    avatar.textContent="?";
+    status.textContent="";
+    box.innerHTML='<div class="empty">Select a friend to start chatting.</div>';
+    return;
+  }
+
+  name.textContent=selectedFriend;
+  avatar.textContent=initial(selectedFriend);
+  status.textContent="FriendChat conversation";
+
+  const key=current
+    ?current.username+"::"+selectedFriend
+    :"guest::"+selectedFriend;
+
+  const list=messages[key]||[];
+
+  if(!list.length){
+    box.innerHTML='<div class="empty">No messages yet. Say hello! 👋</div>';
+    return;
+  }
+
+  box.innerHTML=list.map(m=>`
+    <div class="msg ${m.from==="me"?"me":"them"}">
+      ${escapeHTML(m.text)}
+      <div class="msg-time">${escapeHTML(m.time)}</div>
+    </div>
+  `).join("");
+
+  box.scrollTop=box.scrollHeight;
+}
+
+function sendMessage(){
+
+  if(!selectedFriend){
+    alert("Select a friend first.");
+    return;
+  }
+
+  const input=document.getElementById("messageInput");
+  const text=input.value.trim();
+
+  if(!text)return;
+
+  const key=current
+    ?current.username+"::"+selectedFriend
+    :"guest::"+selectedFriend;
+
+  if(!messages[key])messages[key]=[];
+
+  messages[key].push({
+    from:"me",
+    text,
+    time:new Date().toLocaleTimeString([],{
+      hour:"2-digit",
+      minute:"2-digit"
+    })
+  });
+
+  input.value="";
+  save();
+  renderMessages();
+}
+
+function enterSend(e){
+  if(e.key==="Enter")sendMessage();
+}
+
+function renderProfile(){
+
+  const box=document.getElementById("profileContent");
+
+  if(!current){
+
+    box.innerHTML=`
+      <div class="panel form">
+        <h2>👤 Your Profile</h2>
+        <p>Login to create your profile.</p>
+        <button class="primary" onclick="show('auth')">Login</button>
+      </div>
+    `;
+
+    return;
+  }
+
+  const user=users.find(u=>u.username===current.username);
+
+  box.innerHTML=`
+    <div class="profile">
+      <div class="panel">
+
+        <div class="profile-top">
+          <div class="big-avatar">${initial(current.username)}</div>
+          <h2>${escapeHTML(current.username)}</h2>
+          <p class="muted">FriendChat Hub member</p>
+        </div>
+
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <strong>${friends.length}</strong>
+            <span>Friends</span>
+          </div>
+
+          <div class="profile-stat">
+            <strong>${Object.keys(messages).length}</strong>
+            <span>Chats</span>
+          </div>
+
+          <div class="profile-stat">
+            <strong>1.0</strong>
+            <span>Version</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="danger" onclick="logout()">Logout</button>
+        </div>
+
+        <p class="muted" style="margin-top:20px">
+          Account created:
+          ${user?new Date(user.created).toLocaleDateString():"—"}
+        </p>
+
+      </div>
+    </div>
+  `;
+}
+
+function logout(){
+
+  current=null;
+  selectedFriend=null;
+
+  save();
+  updateHeader();
+  show("home");
+}
+
+function escapeHTML(text){
+
+  const d=document.createElement("div");
+  d.textContent=String(text);
+  return d.innerHTML;
+}
+
+function escapeAttr(text){
+
+  return String(text)
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'");
+}
+
+updateHeader();
+renderFriends();
+renderChats();
+renderProfile();
+</script>
+
+</body>
+</html>
